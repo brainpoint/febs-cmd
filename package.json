@@ -1,0 +1,33 @@
+{
+  "description": "Commands in common use",
+  "dependencies": {
+    "febs": "^0.8.30",
+    "term-list": "^0.2.1"
+  },
+  "devDependencies": {},
+  "directories": {},
+  "homepage": "https://github.com/brainpoint/febs-cmd#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/brainpoint/febs-cmd.git"
+  },
+  "engines": {
+    "node": ">=6"
+  },
+  "bin": {
+    "febs-cmd": "./index.js"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "name": "brainpoint",
+      "email": "bpoint.lee@gmail.com"
+    }
+  ],
+  "scripts": {
+    "postinstall": "node ./postinstall"
+  },
+  "name": "febs-cmd",
+  "version": "0.0.3"
+}
