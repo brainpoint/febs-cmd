@@ -12,8 +12,10 @@ run `febs-cmd` in terminal.
 ### command list
 
 ``` bash
-> show file
-> hide file
+> <docker icon size>
+  show file
+  hide file
+  [exit]
 ```
 
 ### platform support.

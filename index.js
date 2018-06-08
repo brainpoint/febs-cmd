@@ -16,7 +16,15 @@ var isLinux = os.platform().indexOf('linux') === 0;
 var cmds = [];
 var dir = path.join(__dirname, './scripts', isWin?'win':(isMac?'mac':'linux'));
 
-var files = febs.file.dirExplorerFilesRecursive(dir, /.*\.js/);
+// dir.
+var dirs = febs.file.dirExplorerDirsRecursive(dir, /.*/);
+dirs.forEach(element => {
+  var f = path.join(dir, element);
+  cmds.push({name:'<'+element+'>', cmd:null, dir:f});
+});
+
+// file.
+var files = febs.file.dirExplorer(dir).files;
 files.forEach(element => {
   var f = require(path.join(dir, element));
   cmds.push({name:f.name, cmd:f.cmd});
@@ -40,17 +48,70 @@ list.on('keypress', function(key, item){
       else {
         for (var i = 0; i < cmds.length; i++) {
           if (item == cmds[i].name) {
-            exec(cmds[i].cmd, function(err){
-              if (err) {
-                list.stop();
-                console.log(err);
-              } else {
-                list.select('exit');
-              }
-            });
-          }
-        }
-      }
+
+            // scripts.
+            if (cmds[i].cmd) {
+              exec(cmds[i].cmd, function(err){
+                if (err) {
+                  list.stop();
+                  console.log(err);
+                } else {
+                  list.select('exit');
+                }
+              });
+            }
+            // scripts dir
+            else {
+              let subcmds = [];
+              let dir = cmds[i].dir;
+              // file.
+              let files = febs.file.dirExplorerFilesRecursive(dir, /.*\.js/);
+              files.forEach(element => {
+                var f = require(path.join(dir, element));
+                subcmds.push({name:f.name, cmd:f.cmd});
+              });
+
+              let sublist = new List({ marker: '> ', markerLength: 2 });
+              subcmds.forEach(element => {
+                sublist.add(element.name, element.name);
+              });
+              sublist.add('back', '[back]');
+              list.stop();
+              sublist.start();
+
+              // do.
+              sublist.on('keypress', function(key, item){
+                switch (key.name) {
+                  case 'return':
+                    if (item == 'back') {
+                      sublist.stop();
+                      list.start();
+                    }
+                    else {
+                      for (var i = 0; i < subcmds.length; i++) {
+                        if (item == subcmds[i].name) {
+                          // scripts.
+                          exec(subcmds[i].cmd, function(err){
+                            if (err) {
+                              sublist.stop();
+                              list.start();
+                              console.log(err);
+                            } else {
+                              sublist.stop();
+                              list.start();
+                            }
+                          });
+                        }
+                      }
+                    }
+                    break;
+                  }
+                });
+
+            } // if..else.
+          } // if.
+        } // for.
+      } // if..else.
       break;
   }
 });
