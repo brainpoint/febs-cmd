@@ -7,23 +7,28 @@ var path = require('path');
 var spawn = require('child_process').spawn;
 var readline = require('readline');
 
+
+
 //
 // readline.
 function getInput(inputs, cbFinish) {
+  var  rl = readline.createInterface({
+    input:process.stdin,
+    output:process.stdout
+  });
+
+  console.log("Enter the paramater:");
+
   var input = [];
   var ii = 0;
   function question(cb) {
     if (ii >= inputs.length) {
+      rl.close();
       cb(input);
       return input;
     }
-    var  rl = readline.createInterface({
-      input:process.stdin,
-      output:process.stdout
-    });
 
     rl.question(inputs[ii], function(answer){
-      rl.close();
       if (febs.string.isEmpty(answer)) {
         process.nextTick(function(){
           question(cb);
@@ -71,6 +76,7 @@ files.forEach(element => {
 
 
 var list = new List({ marker: '> ', markerLength: 2 });
+
 cmds.forEach(element => {
   list.add(element.name, element.name);
 });
@@ -91,18 +97,20 @@ list.on('keypress', function(key, item){
             if (cmds[i].cmd) {
               if (cmds[i].inputs && cmds[i].inputs.length > 0) {
                 list.stop();
-                getInput(cmds[i].inputs, function(input) {
-                  let cms = cmds[i].cmd.split(' ');
-                  input = cms.splice(1).concat(input);
-
-                  var proc = spawn(cms[0], input, {stdio: 'inherit'});
-                  proc.on('close', function (code) {
-                    if (code !== 0) {
-                      console.log(err);
-                      return;
-                    } else {
-                      process.exit(0);
-                    }
+                process.nextTick(function(){
+                  getInput(cmds[i].inputs, function(input) {
+                    let cms = cmds[i].cmd.split(' ');
+                    input = cms.splice(1).concat(input);
+  
+                    var proc = spawn(cms[0], input, {stdio: 'inherit'});
+                    proc.on('close', function (code) {
+                      if (code !== 0) {
+                        console.log(err);
+                        return;
+                      } else {
+                        process.exit(0);
+                      }
+                    });
                   });
                 });
               }
