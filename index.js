@@ -1,10 +1,49 @@
 #!/usr/bin/env node
 
 var List = require('term-list');
-var exec = require('child_process').exec;
 var febs = require('febs');
 var os = require('os');
 var path = require('path');
+var spawn = require('child_process').spawn;
+var readline = require('readline');
+
+//
+// readline.
+function getInput(inputs, cbFinish) {
+  var input = [];
+  var ii = 0;
+  function question(cb) {
+    if (ii >= inputs.length) {
+      cb(input);
+      return input;
+    }
+    var  rl = readline.createInterface({
+      input:process.stdin,
+      output:process.stdout
+    });
+
+    rl.question(inputs[ii], function(answer){
+      rl.close();
+      if (febs.string.isEmpty(answer)) {
+        process.nextTick(function(){
+          question(cb);
+        });
+        return;
+      }
+      else {
+        input.push(inputs[ii]+answer);
+
+        if (++ii <= inputs.length) {
+          process.nextTick(function(){
+            question(cb);
+          });
+        }
+      }
+    });  
+  }
+
+  question(cbFinish);
+}
 
 //
 // platform.
@@ -27,7 +66,7 @@ dirs.forEach(element => {
 var files = febs.file.dirExplorer(dir).files;
 files.forEach(element => {
   var f = require(path.join(dir, element));
-  cmds.push({name:f.name, cmd:f.cmd});
+  cmds.push({name:f.name, cmd:f.cmd, inputs:f.inputs});
 });
 
 
@@ -48,17 +87,38 @@ list.on('keypress', function(key, item){
       else {
         for (var i = 0; i < cmds.length; i++) {
           if (item == cmds[i].name) {
-
             // scripts.
             if (cmds[i].cmd) {
-              exec(cmds[i].cmd, function(err){
-                if (err) {
-                  list.stop();
-                  console.log(err);
-                } else {
-                  list.select('exit');
-                }
-              });
+              if (cmds[i].inputs && cmds[i].inputs.length > 0) {
+                list.stop();
+                getInput(cmds[i].inputs, function(input) {
+                  let cms = cmds[i].cmd.split(' ');
+                  input = cms.splice(1).concat(input);
+
+                  var proc = spawn(cms[0], input, {stdio: 'inherit'});
+                  proc.on('close', function (code) {
+                    if (code !== 0) {
+                      console.log(err);
+                      return;
+                    } else {
+                      process.exit(0);
+                    }
+                  });
+                });
+              }
+              else {
+                var proc = spawn(cmds[i].cmd, null, {stdio: 'inherit'});
+                proc.on('close', function (code) {
+                  if (code !== 0) {
+                    list.stop();
+                    console.log(err);
+                    return;
+                  } else {
+                    list.select('exit');
+                  }
+                });
+              }
+              break;
             }
             // scripts dir
             else {
@@ -68,7 +128,7 @@ list.on('keypress', function(key, item){
               let files = febs.file.dirExplorerFilesRecursive(dir, /.*\.js/);
               files.forEach(element => {
                 var f = require(path.join(dir, element));
-                subcmds.push({name:f.name, cmd:f.cmd});
+                subcmds.push({name:f.name, cmd:f.cmd, inputs:f.inputs});
               });
 
               let sublist = new List({ marker: '> ', markerLength: 2 });
@@ -88,19 +148,37 @@ list.on('keypress', function(key, item){
                       list.start();
                     }
                     else {
-                      for (var i = 0; i < subcmds.length; i++) {
-                        if (item == subcmds[i].name) {
-                          // scripts.
-                          exec(subcmds[i].cmd, function(err){
-                            if (err) {
-                              sublist.stop();
-                              list.start();
-                              console.log(err);
-                            } else {
-                              sublist.stop();
-                              list.start();
-                            }
-                          });
+                      for (var j = 0; j < subcmds.length; j++) {
+                        if (item == subcmds[j].name) {
+
+                          if (subcmds[j].inputs && subcmds[j].inputs.length > 0) {
+                            sublist.stop();
+                            getInput(subcmds[j].inputs, function(input) {
+                              var proc = spawn(subcmds[j].cmd, input, {stdio: 'inherit'});
+                              proc.on('close', function (code) {
+                                if (code !== 0) {
+                                  console.log(err);
+                                  return;
+                                } else {
+                                  list.start();
+                                }
+                              });
+                            });
+                          }
+                          else {
+                            // scripts.
+                            var proc = spawn(subcmds[j].cmd, null, {stdio: 'inherit'});
+                            proc.on('close', function (code) {
+                              if (code !== 0) {
+                                sublist.stop();
+                                console.log(err);
+                                return;
+                              } else {
+                                sublist.stop();
+                                list.start();
+                              }
+                            });
+                          }
                         }
                       }
                     }

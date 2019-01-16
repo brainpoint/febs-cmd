@@ -36,4 +36,5 @@ npm-debug.log
 #
 resource/
 client/
+node_modules
 

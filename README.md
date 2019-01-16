@@ -13,8 +13,10 @@ run `febs-cmd` in terminal.
 
 ``` bash
 > <docker icon size>
-  show file
-  hide file
+  <files>
+    show file
+    hide file
+  minimum vue code
   [exit]
 ```
 
