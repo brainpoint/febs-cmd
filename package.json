@@ -4,9 +4,7 @@
     "febs": "^0.8.63",
     "ora": "^2.1.0",
     "shelljs": "^0.8.2",
-    "term-list": "^0.2.1"
-  },
-  "devDependencies": {
+    "term-list": "^0.2.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^6.4.1",
     "babel-plugin-istanbul": "^4.1.1",
@@ -60,5 +58,5 @@
     "postinstall": "node ./postinstall"
   },
   "name": "febs-cmd",
-  "version": "0.0.14"
+  "version": "0.0.16"
 }
