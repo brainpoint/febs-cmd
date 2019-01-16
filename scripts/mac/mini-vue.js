@@ -15,3 +15,5 @@ exports.cmd = `node ${path.join(__dirname, '..','..','libs','buildvue','build.js
 
 exports.inputs = ['--output=', '--input='];
 
+exports.inputHint = '--output=[output dir] --input=[input file]';
+

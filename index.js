@@ -7,14 +7,16 @@ var path = require('path');
 var spawn = require('child_process').spawn;
 var readline = require('readline');
 
-
-
 //
 // readline.
 function getInput(inputs, cbFinish) {
+  process.stdin.removeAllListeners('data');
+  process.stdin.removeAllListeners('newListener');
+
   var  rl = readline.createInterface({
     input:process.stdin,
-    output:process.stdout
+    output:process.stdout,
+    removeHistoryDuplicates: true
   });
 
   console.log("Enter the paramater:");
@@ -71,7 +73,7 @@ dirs.forEach(element => {
 var files = febs.file.dirExplorer(dir).files;
 files.forEach(element => {
   var f = require(path.join(dir, element));
-  cmds.push({name:f.name, cmd:f.cmd, inputs:f.inputs});
+  cmds.push({name:f.name, cmd:f.cmd, inputs:f.inputs, inputHint:f.inputHint});
 });
 
 
@@ -98,6 +100,10 @@ list.on('keypress', function(key, item){
               if (cmds[i].inputs && cmds[i].inputs.length > 0) {
                 list.stop();
                 process.nextTick(function(){
+                  if (cmds[i].inputHint)
+                    console.log(cmds[i].inputHint);
+                  console.log('');
+                  
                   getInput(cmds[i].inputs, function(input) {
                     let cms = cmds[i].cmd.split(' ');
                     input = cms.splice(1).concat(input);
@@ -105,7 +111,7 @@ list.on('keypress', function(key, item){
                     var proc = spawn(cms[0], input, {stdio: 'inherit'});
                     proc.on('close', function (code) {
                       if (code !== 0) {
-                        console.log(err);
+                        console.log(code);
                         return;
                       } else {
                         process.exit(0);
@@ -119,7 +125,7 @@ list.on('keypress', function(key, item){
                 proc.on('close', function (code) {
                   if (code !== 0) {
                     list.stop();
-                    console.log(err);
+                    console.log(code);
                     return;
                   } else {
                     list.select('exit');
@@ -161,6 +167,10 @@ list.on('keypress', function(key, item){
 
                           if (subcmds[j].inputs && subcmds[j].inputs.length > 0) {
                             sublist.stop();
+
+                            if (subcmds[j].inputHint)
+                              console.log(subcmds[j].inputHint);
+                            console.log('');
                             getInput(subcmds[j].inputs, function(input) {
                               var proc = spawn(subcmds[j].cmd, input, {stdio: 'inherit'});
                               proc.on('close', function (code) {
