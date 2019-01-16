@@ -32,7 +32,7 @@ var config = {
   module: {
     rules: [
       vueLoader,
-      jsLoader.preLoader({include:[resolve('components-vue')]}),
+      jsLoader.preLoader({include:[/.*/]}),
       // jsLoader.postLoader,
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,

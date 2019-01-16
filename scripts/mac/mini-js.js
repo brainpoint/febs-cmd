@@ -9,7 +9,7 @@
 
 var path = require('path');
 
-exports.name = 'minimum vue code';
+exports.name = 'minimum js code';
 
 exports.cmd = `node ${path.join(__dirname, '..','..','libs','buildvue','build.js')}`;
 

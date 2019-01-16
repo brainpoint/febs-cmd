@@ -8,4 +8,4 @@
 */
 
 
-module.exports = require('../mac/mini-vue');
+module.exports = require('../mac/mini-js');

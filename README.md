@@ -16,7 +16,7 @@ run `febs-cmd` in terminal.
   <files>
     show file
     hide file
-  minimum vue code
+  minimum js code
   [exit]
 ```
 

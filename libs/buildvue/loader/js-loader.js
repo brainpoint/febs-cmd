@@ -9,6 +9,7 @@ exports.preLoader = function (opt) {
     test: /\.js$/,
     loader: 'babel-loader',
     include: opt.include,
+    exclude: /node_modules/,
     query: {
       presets: ['es2015', 'stage-0', 'es2015-loose'],
       plugins: [
