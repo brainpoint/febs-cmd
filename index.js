@@ -6,6 +6,7 @@ var os = require('os');
 var path = require('path');
 var spawn = require('child_process').spawn;
 var readline = require('readline');
+var chalk = require('chalk')
 
 //
 // readline.
@@ -100,8 +101,10 @@ list.on('keypress', function(key, item){
               if (cmds[i].inputs && cmds[i].inputs.length > 0) {
                 list.stop();
                 process.nextTick(function(){
+
+                  console.log(process.cwd());
                   if (cmds[i].inputHint)
-                    console.log(cmds[i].inputHint);
+                    console.log(chalk.cyan(cmds[i].inputHint));
                   console.log('');
                   
                   getInput(cmds[i].inputs, function(input) {
@@ -121,7 +124,8 @@ list.on('keypress', function(key, item){
                 });
               }
               else {
-                var proc = spawn(cmds[i].cmd, null, {stdio: 'inherit'});
+                let cms = cmds[i].cmd.split(' ');
+                var proc = spawn(cms[0], cms.splice(1), {stdio: 'inherit'});
                 proc.on('close', function (code) {
                   if (code !== 0) {
                     list.stop();
@@ -168,11 +172,15 @@ list.on('keypress', function(key, item){
                           if (subcmds[j].inputs && subcmds[j].inputs.length > 0) {
                             sublist.stop();
 
+                            console.log(process.cwd());
                             if (subcmds[j].inputHint)
-                              console.log(subcmds[j].inputHint);
+                              console.log(chalk.cyan(subcmds[j].inputHint));
                             console.log('');
                             getInput(subcmds[j].inputs, function(input) {
-                              var proc = spawn(subcmds[j].cmd, input, {stdio: 'inherit'});
+
+                              let cms = subcmds[j].cmd.split(' ');
+                              input = cms.splice(1).concat(input);
+                              var proc = spawn(cms[0], input, {stdio: 'inherit'});
                               proc.on('close', function (code) {
                                 if (code !== 0) {
                                   console.log(err);
@@ -185,7 +193,8 @@ list.on('keypress', function(key, item){
                           }
                           else {
                             // scripts.
-                            var proc = spawn(subcmds[j].cmd, null, {stdio: 'inherit'});
+                            let cms = subcmds[j].cmd.split(' ');
+                            var proc = spawn(cms[0], cms.splice(1), {stdio: 'inherit'});
                             proc.on('close', function (code) {
                               if (code !== 0) {
                                 sublist.stop();

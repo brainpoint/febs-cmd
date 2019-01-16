@@ -11,11 +11,6 @@ var fs = require('fs');
 process.env.NODE_ENV = 'production'
 
 var srcCwd = process.cwd();
-function restoreCwd() {
-  process.chdir(srcCwd);  
-}
-
-process.chdir(path.join(__dirname, '..', '..'));
 
 // 参数解析.
 var cmds = {};
@@ -33,11 +28,12 @@ for (var i = 0; i < arguments.length; i++) {
 // 输出目录.
 var ParamOutput = cmds['output'];
 var ParamInput = cmds['input'];
+var ParamName = cmds['name'];
 
-if (febs.string.isEmpty(ParamOutput) || febs.string.isEmpty(ParamInput)) {
+if (febs.string.isEmpty(ParamOutput) || febs.string.isEmpty(ParamInput) || febs.string.isEmpty(ParamName)) {
   console.log(chalk.red(
     '  The parameter is error.\n' +
-    '  Tip: --output=[output dir] --input=[input file] .\n'
+    '  Tip: --output=[output dir] --input=[input file] --name=[entry name] .\n'
   ))
   restoreCwd();
   process.exit(0);
@@ -47,53 +43,73 @@ if (febs.string.isEmpty(ParamOutput) || febs.string.isEmpty(ParamInput)) {
 ParamOutput = path.resolve(srcCwd, ParamOutput);
 ParamInput = path.resolve(srcCwd, ParamInput);
 
-console.log(chalk.cyan(
-  '  Will use below parameter:\n' +
-  '   output = ' + ParamOutput + '\n' +
-  '   input  = ' + ParamInput + '\n'
-));
+var destPath = path.join(__dirname, '..', '..', 'build', 'tmp', 'aa');
 
+if (febs.file.dirIsExist(ParamInput)) {
+  if (febs.file.dirIsExist(destPath))
+    febs.file.dirRemoveRecursive(destPath);
 
-var webpackConfig = require('./webpack.prod.conf')
-webpackConfig = webpackConfig({'index': ParamInput}, ParamOutput);
-
-
-var spinner = ora('building for production...')
-spinner.start()
-
-function buildSrc(cbStop, cbSuccess) {
-  webpack(webpackConfig, function (err, stats) {
+  febs.file.dirCopy(ParamInput, destPath, function(err){
     if (err) {
-      cbStop(err);
-      restoreCwd();
-      throw err
+      console.error(err);
+      process.exec(0);
     }
-    process.stdout.write(stats.toString({
-      colors: true,
-      modules: false,
-      children: false,
-      chunks: false,
-      chunkModules: false
-    }) + '\n\n')
-    restoreCwd();
-    cbSuccess();
+    else {
+      dotask();
+    }
+  });
+}
+else {
+  if (febs.file.dirIsExist(destPath))
+    febs.file.dirRemoveRecursive(destPath);
+  
+  if (!febs.file.fileIsExist(ParamInput)) {
+
+    if (ParamInput.indexOf('.js') < 0) {
+      ParamInput += '.js';
+      if (!febs.file.fileIsExist(ParamInput)) {
+        console.error('input file is not existed');
+        process.exec(0);
+      }
+    }
+    else {
+      console.error('input file is not existed');
+      process.exec(0);
+    }
+  }
+  
+  febs.file.fileCopy(ParamInput, path.join(destPath, 'index.js'), function(err){
+    if (err) {
+      console.error(err);
+      process.exec(0);
+    }
+    else {
+      dotask();
+    }
   });
 }
 
-// start.
-buildSrc(function() {
-  spinner.stop();
-}, function(){
 
-  setTimeout(function() {
-    function errorCB(err) {
-      console.log(err);
-      console.log(chalk.red('  Build error.\n'))
-      process.exit(0);
-    }
-    spinner.stop();
-    console.log(chalk.cyan('  Build complete.\n'))
-    process.exit(0);
-  }, 1000);
-});
+function dotask() {
+  //
+  // new process.
+  var childProcess = require('child_process');
 
+  var params = [
+    path.join(__dirname, './buildjs.js'), 
+    '--output='+ ParamOutput, //path.join(__dirname, '..', '..', './dist'),
+    '--input='+destPath,
+    '--name='+ParamName,
+  ];
+  var child = childProcess.spawn('node', params, {cwd: path.join(__dirname, '..', '..')});
+
+  child.stdout.on('data', function(data) {
+    console.log(data.toString());
+  });
+  child.stderr.on('data', function(data) {
+    console.log(data.toString());
+  });
+  child.on('exit', function(code) {
+    console.log('Child exited with code', code);
+  });
+}
