@@ -9,6 +9,7 @@ exports.preLoader = function (opt) {
     test: /\.js$/,
     loader: 'babel-loader',
     include: opt.include,
+    exclude: /(node_modules|bower_components)/,
     query: {
       presets: ['es2015', 'stage-0', 'es2015-loose'],
       plugins: [
@@ -23,6 +24,7 @@ exports.preLoader = function (opt) {
 
 exports.postLoader = {
   test: /.js$/,
+  exclude: /(node_modules|bower_components)/,
   enforce: 'post', // post-loader处理
   loader: 'es3ify-loader'
 };

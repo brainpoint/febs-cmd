@@ -34,21 +34,21 @@ var webpackConfig = merge(baseWebpackConfig, {
     //   'require(\'febs\')': '',
     // }),
     // TODO: 
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false,
-        drop_console: false,
-      },
-      output: {
-        quote_keys: true,
-        comments: false,
-        beautify: false,
-      },
-      mangle: {
-        screw_ie8: false
-      },
-      sourceMap: true,
-    }),
+    // new webpack.optimize.UglifyJsPlugin({
+    //   compress: {
+    //     warnings: false,
+    //     drop_console: false,
+    //   },
+    //   output: {
+    //     quote_keys: true,
+    //     comments: false,
+    //     beautify: false,
+    //   },
+    //   mangle: {
+    //     screw_ie8: false
+    //   },
+    //   sourceMap: true,
+    // }),
     // extract css into its own file
     new ExtractTextPlugin({
       filename: utils.assetsPath('[name].css'),
@@ -137,8 +137,9 @@ var webpackConfig = merge(baseWebpackConfig, {
 
 webpackConfig.plugins.push(new HtmlWebpackProcessPlugin());
 
-module.exports = function(entries, output) {
+module.exports = function(entries, name, output) {
   webpackConfig.entry = entries;
+  webpackConfig.output.library = name;
   webpackConfig.output.path = output;
   return webpackConfig;
 }  

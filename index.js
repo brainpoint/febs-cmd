@@ -31,7 +31,13 @@ function getInput(inputs, cbFinish) {
       return input;
     }
 
-    rl.question(inputs[ii], function(answer){
+    rl.question(inputs[ii].name + (inputs[ii]['default']?'('+inputs[ii]['default']+')':''), function(answer){
+      if (febs.string.isEmpty(answer)) {
+        if (inputs[ii]['default']) {
+          answer = inputs[ii]['default'];
+        }
+      }
+
       if (febs.string.isEmpty(answer)) {
         process.nextTick(function(){
           question(cb);
@@ -39,7 +45,7 @@ function getInput(inputs, cbFinish) {
         return;
       }
       else {
-        input.push(inputs[ii]+answer);
+        input.push(inputs[ii].name+answer);
 
         if (++ii <= inputs.length) {
           process.nextTick(function(){

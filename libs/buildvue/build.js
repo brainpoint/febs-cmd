@@ -43,7 +43,7 @@ if (febs.string.isEmpty(ParamOutput) || febs.string.isEmpty(ParamInput) || febs.
 ParamOutput = path.resolve(srcCwd, ParamOutput);
 ParamInput = path.resolve(srcCwd, ParamInput);
 
-var destPath = path.join(__dirname, '..', '..', 'build', 'tmp', 'aa');
+var destPath = path.join(__dirname, '..', '..', 'build', 'tmp', ParamName);
 
 if (febs.file.dirIsExist(ParamInput)) {
   if (febs.file.dirIsExist(destPath))

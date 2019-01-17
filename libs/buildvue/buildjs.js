@@ -48,8 +48,7 @@ console.log(chalk.cyan(
 var webpackConfig = require('./webpack.prod.conf')
 let xx = {};
 xx[ParamName] = ParamInput;
-webpackConfig = webpackConfig(xx, ParamOutput);
-
+webpackConfig = webpackConfig(xx, ParamName, ParamOutput);
 
 var spinner = ora('building for production...')
 spinner.start()

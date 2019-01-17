@@ -20,13 +20,13 @@ var config = {
     filename: '[name].js',
     publicPath: './',
     library: 'components',
-    libraryTarget: 'commonjs2',
+    libraryTarget: 'umd',
   },
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
       'vue$': 'vue/dist/vue.esm.js',
-      '@': resolve('components-vue')
+      // '@': resolve('components-vue')
     }
   },
   module: {
@@ -50,18 +50,18 @@ var config = {
           name: utils.assetsPath('fonts/[name].[hash:7].[ext]')
         }
       },
-      {
-        test: /\.hbs$/,
-        loader: "handlebars-loader",
-        query: {
-          partialDirs: [
-            resolve('src/partials')
-          ],
-          helperDirs: [
-            resolve('helpers')
-          ]
-        }
-      }
+      // {
+      //   test: /\.hbs$/,
+      //   loader: "handlebars-loader",
+      //   query: {
+      //     partialDirs: [
+      //       resolve('src/partials')
+      //     ],
+      //     helperDirs: [
+      //       resolve('helpers')
+      //     ]
+      //   }
+      // }
     ]
   },
   externals: {
@@ -94,7 +94,13 @@ var config = {
       commonjs2: 'lodash',
       amd: 'lodash',
       root: '_'
-    }
+    },
+    'core-js': {
+      root: 'core-js',
+      commonjs: 'core-js',
+      commonjs2: 'core-js',
+      amd: 'core-js',
+    },
   }
 }
 
