@@ -20,7 +20,13 @@ for (var i = 0; i < arguments.length; i++) {
   if (arguments[i].indexOf('-') == 0) {
     let cc = arguments[i].indexOf('=');
     if (cc > 0) {
-      cmds[febs.string.replace(arguments[i].substr(0, cc), '-', '')] = arguments[i].substr(cc+1);
+      let p = arguments[i].substr(cc+1);
+      if (p && p.length > 0) {
+        if (p[0] == '\'' && p[p.length-1] == '\''
+        || p[0] == '"' && p[p.length-1] == '"')
+          p = p.substring(1, p.length-1);
+      }
+      cmds[febs.string.replace(arguments[i].substr(0, cc), '-', '')] = p;
     }
   }
 }
@@ -29,6 +35,7 @@ for (var i = 0; i < arguments.length; i++) {
 var ParamOutput = cmds['output'];
 var ParamInput = cmds['input'];
 var ParamName = cmds['name'];
+var ParamExternals = cmds['externals'];
 
 if (febs.string.isEmpty(ParamOutput) || febs.string.isEmpty(ParamInput) || febs.string.isEmpty(ParamName)) {
   console.log(chalk.red(
@@ -52,7 +59,7 @@ if (febs.file.dirIsExist(ParamInput)) {
   febs.file.dirCopy(ParamInput, destPath, function(err){
     if (err) {
       console.error(err);
-      process.exec(0);
+      process.exit(0);
     }
     else {
       dotask();
@@ -69,19 +76,19 @@ else {
       ParamInput += '.js';
       if (!febs.file.fileIsExist(ParamInput)) {
         console.error('input file is not existed');
-        process.exec(0);
+        process.exit(0);
       }
     }
     else {
       console.error('input file is not existed');
-      process.exec(0);
+      process.exit(0);
     }
   }
   
   febs.file.fileCopy(ParamInput, path.join(destPath, 'index.js'), function(err){
     if (err) {
       console.error(err);
-      process.exec(0);
+      process.exit(0);
     }
     else {
       dotask();
@@ -100,6 +107,7 @@ function dotask() {
     '--output='+ ParamOutput, //path.join(__dirname, '..', '..', './dist'),
     '--input='+destPath,
     '--name='+ParamName,
+    '--externals='+ParamExternals,
   ];
   var child = childProcess.spawn('node', params, {cwd: path.join(__dirname, '..', '..')});
 

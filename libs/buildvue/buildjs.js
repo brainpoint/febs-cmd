@@ -28,6 +28,7 @@ for (var i = 0; i < arguments.length; i++) {
 var ParamOutput = cmds['output'];
 var ParamInput = cmds['input'];
 var ParamName = cmds['name'];
+var ParamExternals = cmds['externals'];
 
 if (febs.string.isEmpty(ParamOutput) || febs.string.isEmpty(ParamInput) || febs.string.isEmpty(ParamName)) {
   console.log(chalk.red(
@@ -41,14 +42,15 @@ console.log(chalk.cyan(
   '  Will use below parameter:\n' +
   '   output = ' + ParamOutput + '\n' +
   '   input  = ' + ParamInput + '\n' +
-  '   name   = ' + ParamName + '\n'
+  '   name   = ' + ParamName + '\n' + 
+  '   externals = ' + ParamExternals + '\n'
 ));
 
 
 var webpackConfig = require('./webpack.prod.conf')
 let xx = {};
 xx[ParamName] = ParamInput;
-webpackConfig = webpackConfig(xx, ParamName, ParamOutput);
+webpackConfig = webpackConfig(xx, ParamName, ParamOutput, ParamExternals);
 
 var spinner = ora('building for production...')
 spinner.start()

@@ -5,8 +5,68 @@ var febs = require('febs');
 var os = require('os');
 var path = require('path');
 var spawn = require('child_process').spawn;
+var exec = require('child_process').exec;
 var readline = require('readline');
 var chalk = require('chalk')
+
+
+// 参数解析.
+var params = {};
+var arguments = process.argv.splice(1);
+for (var i = 0; i < arguments.length; i++) {
+  arguments[i] = febs.string.trim(arguments[i]);
+  if (arguments[i].indexOf('-') == 0) {
+    let cc = arguments[i].indexOf('=');
+    if (cc > 0) {
+      let p = arguments[i].substr(cc+1);
+      if (p && p.length > 0) {
+        if (p[0] == '\'' && p[p.length-1] == '\''
+        || p[0] == '"' && p[p.length-1] == '"')
+          p = p.substring(1, p.length-1);
+      }
+      params[febs.string.replace(arguments[i].substr(0, cc), '-', '')] = p;
+    }
+  }
+}
+
+/**
+* @desc: 执行cmd.
+* @return: 
+*/
+function execCommand(cmdString, inputs, cbFinish) {
+  // scripts.
+  let cms = cmdString.split(' ');
+  let cmps = cms[0];
+  let inputps = cms.splice(1);
+  if (cmdString.indexOf('&') >= 0) {
+    cmps = cmdString;
+    inputps = null;
+  }
+
+  if (!inputps) {
+    exec(cmps, function(err){
+      if (cbFinish) cbFinish(err);
+      if (err) {
+        console.log(err);
+      } else {
+      }
+      if (cbFinish) cbFinish(err);
+    });
+  }
+  else {
+    inputps = inputps.concat(inputs||[]);
+    
+    var proc = spawn(cmps, inputps, {stdio: 'inherit'});
+    proc.on('close', function (code) {
+      if (code !== 0) {
+        console.log(code);
+      } else {
+      }
+      if (cbFinish) cbFinish(code);
+    });
+  }
+}
+
 
 //
 // readline.
@@ -73,7 +133,7 @@ var dir = path.join(__dirname, './scripts', isWin?'win':(isMac?'mac':'linux'));
 var dirs = febs.file.dirExplorerDirsRecursive(dir, /.*/);
 dirs.forEach(element => {
   var f = path.join(dir, element);
-  cmds.push({name:'<'+element+'>', cmd:null, dir:f});
+  cmds.push({name:'<'+element+'>', cmd:null, dir:f, _name:element});
 });
 
 // file.
@@ -82,6 +142,80 @@ files.forEach(element => {
   var f = require(path.join(dir, element));
   cmds.push({name:f.name, cmd:f.cmd, inputs:f.inputs, inputHint:f.inputHint});
 });
+
+// 
+// direct cmd.
+if (params['cmd']) {
+  for (let i = 0; i < cmds.length; i++) {
+    let cmd;
+    if (params['subcmd']) {
+      if (cmds[i]._name == params['cmd']) {
+        cmd = cmds[i];
+      }
+    }
+    else {
+      if (cmds[i].name == params['cmd']) {
+        cmd = cmds[i];
+      }
+    }
+
+    if (!cmd) { continue; }
+
+    let rcmd;
+
+    if (params['subcmd']) {
+      // file.
+      let files = febs.file.dirExplorerFilesRecursive(cmd.dir, /.*\.js/);
+      let subcmds = [];
+      files.forEach(element => {
+        var f = require(path.join(cmd.dir, element));
+        subcmds.push({name:f.name, cmd:f.cmd, inputs:f.inputs, inputHint:f.inputHint});
+      });
+
+      for (let j = 0; j < subcmds.length; j++) {
+        if (subcmds[j].name == params['subcmd']) {
+          rcmd = subcmds[j];
+        }
+      }
+    }
+    else {
+      rcmd = cmd;
+    }
+
+    if (!rcmd) {
+      continue;
+    }
+
+
+    // cmd.
+    if (rcmd.inputs && rcmd.inputs.length > 0) {
+      console.log(process.cwd());
+      if (rcmd.inputHint)
+        console.log(chalk.cyan(rcmd.inputHint));
+      console.log('');
+      delete params['cmd'];
+      delete params['subcmd'];
+      let inputss = [];
+      for (const key in params) {
+        inputss.push(`--${key}=${params[key]}`);
+      }
+      execCommand(rcmd.cmd, inputss, function(err){
+        process.exit(0);
+      });
+    }
+    else {
+      // scripts.
+      execCommand(rcmd.cmd, null, function(err){
+        process.exit(0);
+      });
+    }
+
+    return;
+  }
+
+  console.log('Can\'t find command');
+  process.exit(0);
+}
 
 
 var list = new List({ marker: '> ', markerLength: 2 });
@@ -114,13 +248,9 @@ list.on('keypress', function(key, item){
                   console.log('');
                   
                   getInput(cmds[i].inputs, function(input) {
-                    let cms = cmds[i].cmd.split(' ');
-                    input = cms.splice(1).concat(input);
-  
-                    var proc = spawn(cms[0], input, {stdio: 'inherit'});
-                    proc.on('close', function (code) {
-                      if (code !== 0) {
-                        console.log(code);
+                    execCommand(cmds[i].cmd, input, function(err){
+                      if (err) {
+                        console.log(err);
                         return;
                       } else {
                         process.exit(0);
@@ -130,12 +260,10 @@ list.on('keypress', function(key, item){
                 });
               }
               else {
-                let cms = cmds[i].cmd.split(' ');
-                var proc = spawn(cms[0], cms.splice(1), {stdio: 'inherit'});
-                proc.on('close', function (code) {
-                  if (code !== 0) {
+                execCommand(cmds[i].cmd, null, function(err){
+                  if (err) {
                     list.stop();
-                    console.log(code);
+                    console.log(err);
                     return;
                   } else {
                     list.select('exit');
@@ -152,7 +280,7 @@ list.on('keypress', function(key, item){
               let files = febs.file.dirExplorerFilesRecursive(dir, /.*\.js/);
               files.forEach(element => {
                 var f = require(path.join(dir, element));
-                subcmds.push({name:f.name, cmd:f.cmd, inputs:f.inputs});
+                subcmds.push({name:f.name, cmd:f.cmd, inputs:f.inputs, inputHint:f.inputHint});
               });
 
               let sublist = new List({ marker: '> ', markerLength: 2 });
@@ -183,12 +311,8 @@ list.on('keypress', function(key, item){
                               console.log(chalk.cyan(subcmds[j].inputHint));
                             console.log('');
                             getInput(subcmds[j].inputs, function(input) {
-
-                              let cms = subcmds[j].cmd.split(' ');
-                              input = cms.splice(1).concat(input);
-                              var proc = spawn(cms[0], input, {stdio: 'inherit'});
-                              proc.on('close', function (code) {
-                                if (code !== 0) {
+                              execCommand(subcmds[j].cmd, input, function(err){
+                                if (err) {
                                   console.log(err);
                                   return;
                                 } else {
@@ -199,10 +323,8 @@ list.on('keypress', function(key, item){
                           }
                           else {
                             // scripts.
-                            let cms = subcmds[j].cmd.split(' ');
-                            var proc = spawn(cms[0], cms.splice(1), {stdio: 'inherit'});
-                            proc.on('close', function (code) {
-                              if (code !== 0) {
+                            execCommand(subcmds[j].cmd, null, function(err){
+                              if (err) {
                                 sublist.stop();
                                 console.log(err);
                                 return;

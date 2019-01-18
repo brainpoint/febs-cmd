@@ -10,6 +10,7 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin')
 var SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin')
 var HtmlWebpackProcessPlugin = require('./plugin/html-webpack-process-plugin')
 var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+var febs = require('febs');
 
 var entry = require('./config/entry');
 
@@ -34,21 +35,21 @@ var webpackConfig = merge(baseWebpackConfig, {
     //   'require(\'febs\')': '',
     // }),
     // TODO: 
-    // new webpack.optimize.UglifyJsPlugin({
-    //   compress: {
-    //     warnings: false,
-    //     drop_console: false,
-    //   },
-    //   output: {
-    //     quote_keys: true,
-    //     comments: false,
-    //     beautify: false,
-    //   },
-    //   mangle: {
-    //     screw_ie8: false
-    //   },
-    //   sourceMap: true,
-    // }),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false,
+        drop_console: false,
+      },
+      output: {
+        quote_keys: true,
+        comments: false,
+        beautify: false,
+      },
+      mangle: {
+        screw_ie8: false
+      },
+      sourceMap: true,
+    }),
     // extract css into its own file
     new ExtractTextPlugin({
       filename: utils.assetsPath('[name].css'),
@@ -137,9 +138,25 @@ var webpackConfig = merge(baseWebpackConfig, {
 
 webpackConfig.plugins.push(new HtmlWebpackProcessPlugin());
 
-module.exports = function(entries, name, output) {
+module.exports = function(entries, name, output, externals) {
   webpackConfig.entry = entries;
   webpackConfig.output.library = name;
   webpackConfig.output.path = output;
+
+  if (!febs.string.isEmpty(externals)) {
+    externals = externals.split(',');
+    externals.forEach(element => {
+      element = febs.string.trim(element);
+      if (!webpackConfig.externals[element]) {
+        webpackConfig.externals[element] = {
+          root: element,
+          commonjs: element,
+          commonjs2: element,
+          amd: element
+        }
+      }
+    });
+  }
+
   return webpackConfig;
 }  

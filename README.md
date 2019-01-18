@@ -20,6 +20,19 @@ run `febs-cmd` in terminal.
   [exit]
 ```
 
+### without UI
+
+```bash
+febs-cmd --cmd="minimum js code" --output="" --input="" --name=""
+```
+or
+
+```bash
+febs-cmd --cmd="docker icon size" --subcmd="middle"
+```
+
+
+
 ### platform support.
 
 current only support Mac OS.
