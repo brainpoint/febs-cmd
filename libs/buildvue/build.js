@@ -51,19 +51,31 @@ ParamOutput = path.resolve(srcCwd, ParamOutput);
 ParamInput = path.resolve(srcCwd, ParamInput);
 
 var destPath = path.join(__dirname, '..', '..', 'build', 'tmp', ParamName);
+var destEntry = path.join(destPath, 'index.js');
+var isDirectory = false;
+
 
 if (febs.file.dirIsExist(ParamInput)) {
+  isDirectory = true;
+
   if (febs.file.dirIsExist(destPath))
     febs.file.dirRemoveRecursive(destPath);
 
-  febs.file.dirCopy(ParamInput, destPath, function(err){
-    if (err) {
-      console.error(err);
-      process.exit(0);
+  febs.file.dirCopyExcludeAsync(ParamInput, destPath, /node_modules/)
+  .then(()=>{
+
+    if (febs.file.fileIsExist(path.join(destPath, 'index.js'))) {
+      destEntry = path.join(destPath, 'index.js');
     }
     else {
-      dotask();
+      destEntry = path.join(destPath, 'index.ts');  
     }
+
+    installPackage();
+  })
+  .catch(err=>{
+    console.error(err);
+    process.exit(0);
   });
 }
 else {
@@ -73,10 +85,19 @@ else {
   if (!febs.file.fileIsExist(ParamInput)) {
 
     if (ParamInput.indexOf('.js') < 0) {
-      ParamInput += '.js';
-      if (!febs.file.fileIsExist(ParamInput)) {
-        console.error('input file is not existed');
-        process.exit(0);
+      if (!febs.file.fileIsExist(ParamInput+'.js')) {
+        if (!febs.file.fileIsExist(ParamInput+'.ts')) {
+          console.error('input file is not existed');
+          process.exit(0);
+        }
+        else {
+          ParamInput += '.ts';
+          destEntry = path.join(destPath, 'index.ts');
+        }
+      }
+      else {
+        ParamInput += '.js';
+        destEntry = path.join(destPath, 'index.js');
       }
     }
     else {
@@ -85,17 +106,39 @@ else {
     }
   }
   
-  febs.file.fileCopy(ParamInput, path.join(destPath, 'index.js'), function(err){
+  febs.file.fileCopy(ParamInput, destEntry, function(err){
     if (err) {
       console.error(err);
       process.exit(0);
     }
     else {
-      dotask();
+      installPackage();
     }
   });
 }
 
+function installPackage() {
+  // //
+  // // package.
+  // if (febs.file.dirIsExist(destPath) && febs.file.fileIsExist(path.join(destPath, 'package.json'))) {
+  //   var childProcess = require('child_process');
+  //   var child = childProcess.spawn('npm', ['i'], {cwd: destPath});
+  //   child.stdout.on('data', function(data) {
+  //     console.log(data.toString());
+  //   });
+  //   child.stderr.on('data', function(data) {
+  //     console.log(data.toString());
+  //   });
+  //   child.on('exit', function(code) {
+  //     if (code == 0) {
+  //       dotask();
+  //     }
+  //   });
+  // }
+  // else {
+    dotask();
+  // }
+}
 
 function dotask() {
   //
@@ -105,7 +148,7 @@ function dotask() {
   var params = [
     path.join(__dirname, './buildjs.js'), 
     '--output='+ ParamOutput, //path.join(__dirname, '..', '..', './dist'),
-    '--input='+destPath,
+    '--input='+destEntry,
     '--name='+ParamName,
     '--externals='+ParamExternals,
   ];

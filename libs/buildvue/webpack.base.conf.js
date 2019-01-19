@@ -31,6 +31,12 @@ var config = {
   },
   module: {
     rules: [
+      {
+        test: /\.tsx?$/,
+        use: {
+          loader: 'ts-loader'
+        }
+      },
       vueLoader,
       jsLoader.preLoader({include:[/.*/]}),
       // jsLoader.postLoader,

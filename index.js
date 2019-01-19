@@ -33,39 +33,7 @@ for (var i = 0; i < arguments.length; i++) {
 * @desc: 执行cmd.
 * @return: 
 */
-function execCommand(cmdString, inputs, cbFinish) {
-  // scripts.
-  let cms = cmdString.split(' ');
-  let cmps = cms[0];
-  let inputps = cms.splice(1);
-  if (cmdString.indexOf('&') >= 0) {
-    cmps = cmdString;
-    inputps = null;
-  }
-
-  if (!inputps) {
-    exec(cmps, function(err){
-      if (cbFinish) cbFinish(err);
-      if (err) {
-        console.log(err);
-      } else {
-      }
-      if (cbFinish) cbFinish(err);
-    });
-  }
-  else {
-    inputps = inputps.concat(inputs||[]);
-    
-    var proc = spawn(cmps, inputps, {stdio: 'inherit'});
-    proc.on('close', function (code) {
-      if (code !== 0) {
-        console.log(code);
-      } else {
-      }
-      if (cbFinish) cbFinish(code);
-    });
-  }
-}
+const execCommand = febs.utils.execCommand;
 
 
 //
