@@ -29,6 +29,8 @@ var ParamOutput = cmds['output'];
 var ParamInput = cmds['input'];
 var ParamName = cmds['name'];
 var ParamExternals = cmds['externals'];
+var ParamSingleFile = cmds['singleFile'] == '1';
+var ParamEntryFile = cmds['entryFile'];
 
 if (febs.string.isEmpty(ParamOutput) || febs.string.isEmpty(ParamInput) || febs.string.isEmpty(ParamName)) {
   console.log(chalk.red(
@@ -47,10 +49,28 @@ console.log(chalk.cyan(
 ));
 
 
+// webpack.
 var webpackConfig = require('./webpack.prod.conf')
-let xx = {};
-xx[ParamName] = ParamInput;
-webpackConfig = webpackConfig(xx, ParamName, ParamOutput, ParamExternals);
+let entries = {};
+
+
+if (ParamSingleFile || febs.file.fileIsExist(ParamInput)) {
+
+  let tt;
+  if (febs.file.dirIsExist(ParamInput)) {
+    tt = path.join(ParamInput, ParamEntryFile);
+  }
+
+  entries[ParamName] = tt;
+}
+else {
+  let files = febs.file.dirExplorerFilesRecursive(ParamInput, /.*\.js$/);
+  files.forEach(element => {
+    entries[path.basename(element, '.js')] = path.join(ParamInput, element);
+  });
+} // if..else.
+
+webpackConfig = webpackConfig(entries, ParamName, ParamOutput, ParamExternals);
 
 var spinner = ora('building for production...')
 spinner.start()

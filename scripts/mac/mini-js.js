@@ -13,6 +13,16 @@ exports.name = 'minimum js code';
 
 exports.cmd = `node ${path.join(__dirname, '..','..','libs','buildvue','build.js')}`;
 
-exports.inputs = [{name:'--output=', "default": './dist'}, {name:'--input='}, {name:'--name='}, {externals:'--externals=', "default": ''}];
+exports.inputs = [
+  {name:'--output=', "default": './dist'}, 
+  {name:'--input='}, 
+  {name:'--entryFile=', "default": 'index.js'}, 
+  {singleFile:'--singleFile=', 'default':'1'}, 
+  {name:'--name='}, 
+  {externals:'--externals=', "default": ''}
+];
 
-exports.inputHint = '--output=[output dir] --input=[input file] --name=[entry name] --externals=[lib1,lib2]';
+exports.inputHint = '--output=[output dir] --input=[input file/directry] --entryFile=[input file name]\n\
+ --name=[entry name]\n\
+ --singleFile=[1/0]\n\
+ --externals=[lib1,lib2]\n';

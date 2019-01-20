@@ -36,6 +36,8 @@ var ParamOutput = cmds['output'];
 var ParamInput = cmds['input'];
 var ParamName = cmds['name'];
 var ParamExternals = cmds['externals'];
+var ParamSingleFile = cmds['singleFile'];
+var ParamEntryFile = cmds['entryFile'];
 
 if (febs.string.isEmpty(ParamOutput) || febs.string.isEmpty(ParamInput) || febs.string.isEmpty(ParamName)) {
   console.log(chalk.red(
@@ -64,13 +66,8 @@ if (febs.file.dirIsExist(ParamInput)) {
   febs.file.dirCopyExcludeAsync(ParamInput, destPath, /node_modules/)
   .then(()=>{
 
-    if (febs.file.fileIsExist(path.join(destPath, 'index.js'))) {
-      destEntry = path.join(destPath, 'index.js');
-    }
-    else {
-      destEntry = path.join(destPath, 'index.ts');  
-    }
-
+    destEntry = destPath;
+    
     installPackage();
   })
   .catch(err=>{
@@ -151,6 +148,8 @@ function dotask() {
     '--input='+destEntry,
     '--name='+ParamName,
     '--externals='+ParamExternals,
+    '--singleFile='+ParamSingleFile,
+    '--entryFile='+ParamEntryFile,
   ];
   var child = childProcess.spawn('node', params, {cwd: path.join(__dirname, '..', '..')});
 
