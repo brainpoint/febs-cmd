@@ -7,5 +7,7 @@
 * Desc: 
 */
 
+exports.name = 'https://registry.npmjs.org/';
 
-module.exports = require('../mac/mini-js');
+exports.cmd = 'npm config set registry ' + exports.name;
+

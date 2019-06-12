@@ -16,16 +16,11 @@ run `febs-cmd` in terminal.
   <files>
     show file
     hide file
-  minimum js code
+  <npm source>
   [exit]
 ```
 
 ### without UI
-
-```bash
-febs-cmd --cmd="minimum js code" --output="" --input="" --name=""
-```
-or
 
 ```bash
 febs-cmd --cmd="docker icon size" --subcmd="middle"
