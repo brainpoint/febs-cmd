@@ -9,5 +9,5 @@
 
 exports.name = 'https://r.cnpmjs.org/';
 
-exports.cmd = 'npm config set registry ' + exports.name;
+exports.cmd = 'npm config set registry="' + exports.name + '"';
 

@@ -7,7 +7,7 @@
 * Desc: 
 */
 
-exports.name = 'https://registry.npm.taobao.org/';
+exports.name = '禁止安装任意来源程序';
 
-exports.cmd = 'npm config set registry="' + exports.name + '"';
+exports.cmd = 'sudo spctl --master-enable';
 

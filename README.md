@@ -30,4 +30,5 @@ febs-cmd --cmd="docker icon size" --subcmd="middle"
 
 ### platform support.
 
-current only support Mac OS.
+- Mac OS.
+- Win.
