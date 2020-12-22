@@ -2,7 +2,7 @@
   "description": "Commands in common use",
   "dependencies": {
     "chalk": "^2.4.2",
-    "febs": "^0.8.65",
+    "febs": "^1.0.12",
     "shelljs": "^0.8.2",
     "term-list": "^0.2.1"
   },
@@ -30,5 +30,5 @@
     "postinstall": "node ./postinstall"
   },
   "name": "febs-cmd",
-  "version": "0.0.26"
+  "version": "0.1.1"
 }
